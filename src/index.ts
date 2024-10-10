@@ -1,21 +1,25 @@
-import { serve } from "@hono/node-server";
+import { z } from "zod";
 import dotenv from "dotenv";
 import { Hono } from "hono";
 import * as miio from "miio-api";
+import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
 
-interface Config {
-  power: "on" | "off";
-  brightness: number;
-  color: [number, number, number];
-}
+const hex = z.number().nonnegative().lte(255);
+const Config = z.object({
+  power: z.union([z.literal("on"), z.literal("off")]),
+  brightness: z.number().nonnegative().lte(100),
+  color: z.tuple([hex, hex, hex]),
+});
 
 dotenv.config();
 const app = new Hono();
 
 app.use("/*", serveStatic({ root: "./public" }));
+
 app.post("/api", async (c) => {
-  const config: Config = await c.req.json();
+  const { data: config, success } = Config.safeParse(await c.req.json());
+  if (!success) return c.json({ error: "invalid configuration" }, 400);
 
   const device = await miio.device({
     address: process.env.DEVICE_ADDRESS!,
@@ -40,9 +44,9 @@ app.post("/api", async (c) => {
     }
   });
 
-  const info = await device.call("get_prop", ["power"]);
-  console.log(info);
-  return c.json({ bool: true });
+  // const info = await device.call("get_prop", ["power"]);
+  // console.log(info);
+  return c.json({ data: "success" });
 });
 
 const port = Number(process.env.PORT!);
