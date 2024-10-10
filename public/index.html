@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Smart Bulb Control</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        margin: 0;
+        background-color: #f0f0f0;
+      }
+      .container {
+        background-color: white;
+        padding: 20px;
+        border-radius: 10px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      .bulb {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        margin: 20px auto;
+        transition: all 0.3s ease;
+      }
+      .control {
+        margin-bottom: 15px;
+      }
+      label {
+        display: inline-block;
+        width: 100px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="bulb" id="bulb"></div>
+      <div class="control">
+        <label for="power">Power:</label>
+        <input type="checkbox" id="power" />
+      </div>
+      <div class="control">
+        <label for="brightness">Brightness:</label>
+        <input type="range" id="brightness" min="0" max="100" value="100" />
+      </div>
+      <div class="control">
+        <label for="color">Color:</label>
+        <input type="color" id="color" value="#ffffff" />
+      </div>
+    </div>
+
+    <script src="index.js"></script>
+  </body>
+</html>

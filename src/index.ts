@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import dotenv from "dotenv";
 import { Hono } from "hono";
 import * as miio from "miio-api";
+import { serveStatic } from "@hono/node-server/serve-static";
 
 interface Config {
   power: "on" | "off";
@@ -12,12 +13,15 @@ interface Config {
 dotenv.config();
 const app = new Hono();
 
+app.use("/*", serveStatic({ root: "./public" }));
 app.post("/api", async (c) => {
   const config: Config = await c.req.json();
+
   const device = await miio.device({
     address: process.env.DEVICE_ADDRESS!,
     token: process.env.DEVICE_TOKEN!,
   });
+
   Object.keys(config).forEach(async (c) => {
     switch (c) {
       case "power":
@@ -28,11 +32,9 @@ app.post("/api", async (c) => {
         break;
       case "color":
         const color = config[c];
-        console.log({ color });
         const rgb = color[0] * 65536 + color[1] * 256 + color[2];
         await device.call("set_rgb", [rgb]);
         break;
-
       default:
         break;
     }
@@ -40,10 +42,10 @@ app.post("/api", async (c) => {
 
   const info = await device.call("get_prop", ["power"]);
   console.log(info);
-  return c.text("Hello Hono!");
+  return c.json({ bool: true });
 });
 
-const port = 3000;
+const port = Number(process.env.PORT!);
 console.log(`Server is running on port ${port}`);
 
 serve({
