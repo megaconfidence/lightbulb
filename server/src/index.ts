@@ -4,12 +4,13 @@ import { Hono } from "hono";
 import * as miio from "miio-api";
 import { serve } from "@hono/node-server";
 import { serveStatic } from "@hono/node-server/serve-static";
+import { zValidator } from "@hono/zod-validator";
 
 const hex = z.number().nonnegative().lte(255);
 const Config = z.object({
-  power: z.union([z.literal("on"), z.literal("off")]),
-  brightness: z.number().nonnegative().lte(100),
-  color: z.tuple([hex, hex, hex]),
+  power: z.union([z.literal("on"), z.literal("off")]).optional(),
+  brightness: z.number().nonnegative().lte(100).optional(),
+  color: z.tuple([hex, hex, hex]).optional(),
 });
 
 dotenv.config();
@@ -17,9 +18,8 @@ const app = new Hono();
 
 app.use("/*", serveStatic({ root: "./public" }));
 
-app.post("/api", async (c) => {
-  const { data: config, success } = Config.safeParse(await c.req.json());
-  if (!success) return c.json({ error: "invalid configuration" }, 400);
+app.post("/api", zValidator("json", Config), async (c) => {
+  const config = c.req.valid("json");
 
   const device = await miio.device({
     address: process.env.DEVICE_ADDRESS!,
