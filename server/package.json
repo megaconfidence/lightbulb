@@ -1,5 +1,6 @@
 {
   "name": "light-bulb",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/index.ts"
   },
@@ -11,10 +12,12 @@
     "miio": "^0.15.6",
     "miio-api": "^0.4.1",
     "node-mihome": "^0.0.32",
+    "ws": "^8.18.0",
     "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
+    "@types/ws": "^8.5.12",
     "tsx": "^4.7.1"
   }
 }
