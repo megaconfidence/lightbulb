@@ -3,7 +3,19 @@ const powerSwitch = document.getElementById("power");
 const brightnessSlider = document.getElementById("brightness");
 const colorPicker = document.getElementById("color");
 
-const ws = new WebSocket("ws://localhost:8787");
+let ws;
+function connectToWebSocket() {
+  ws = new WebSocket("ws://localhost:8787");
+  ws.onerror = () => {
+    console.log("websocket reconnecting...");
+    setTimeout(connectToWebSocket, 1000);
+  };
+  ws.onopen = () => {
+    ws.send(JSON.stringify({ type: "new_client" }));
+  };
+}
+connectToWebSocket();
+
 ws.onmessage = (e) => {
   const msg = JSON.parse(e.data);
   console.log(msg);
@@ -37,7 +49,6 @@ function updateBulbState() {
   };
 
   updateBulbUi(payload);
-  // Send payload to API
   sendToApi(payload);
 }
 function updateBulbUi({ power, color, brightness }) {
@@ -45,15 +56,13 @@ function updateBulbUi({ power, color, brightness }) {
   bulb.style.opacity = power === "on" ? brightness / 100 : 0.5;
 }
 function rgbToHex(rgb) {
-  return (
-    "#" +
-    rgb
-      .map((x) => {
-        const hex = x.toString(16);
-        return hex.length === 1 ? "0" + hex : hex;
-      })
-      .join("")
-  );
+  const hex = rgb
+    .map((x) => {
+      const h = x.toString(16);
+      return h.length === 1 ? "0" + h : h;
+    })
+    .join("");
+  return "#" + hex;
 }
 function hexToRgb(hex) {
   const r = parseInt(hex.slice(1, 3), 16);
@@ -67,16 +76,6 @@ function sendToApi(payload) {
   if (ws.readyState === WebSocket.OPEN) {
     ws.send(JSON.stringify({ type: "config", data: payload }));
   }
-  // fetch("/api", {
-  //   method: "POST",
-  //   headers: {
-  //     "Content-Type": "application/json",
-  //   },
-  //   body: JSON.stringify(payload),
-  // })
-  //   .then((response) => response.json())
-  //   .then((data) => console.log("Success:", data))
-  //   .catch((error) => console.error("Error:", error));
 }
 
 // Add event listeners
