@@ -6,12 +6,13 @@ import { zValidator } from "@hono/zod-validator";
 import { serveStatic } from "@hono/node-server/serve-static";
 import { applyConfigToDevice, getDevice, getDeviceState } from "./device";
 
+let ws: WebSocket;
 let timeout: NodeJS.Timeout;
 const device = await getDevice();
 const port = Number(process.env.PORT!);
 
 function connectToWebSocket() {
-  const ws = new WebSocket("ws://localhost:8787");
+  ws = new WebSocket("ws://localhost:8787");
 
   ws.onerror = () => {
     console.log("websocket reconnecting...");
@@ -51,6 +52,7 @@ app.post("/config", zValidator("json", zConfig), async (c) => {
   const config = c.req.valid("json");
   if (timeout) clearTimeout(timeout);
   timeout = setTimeout(() => applyConfigToDevice(device, config), 1000);
+  ws.send(JSON.stringify({ type: "config", data: config }));
   return c.json({ data: "success" });
 });
 
