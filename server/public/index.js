@@ -4,6 +4,7 @@ let ws;
 const bulb = document.getElementById("bulb");
 const powerSwitch = document.getElementById("power");
 const colorPicker = document.getElementById("color");
+const rootStyle = document.querySelector(":root").style;
 const brightnessSlider = document.getElementById("brightness");
 
 function connectToWebSocket() {
@@ -35,7 +36,10 @@ function updateUi(payload) {
   colorPicker.value = rgbToHex(color);
   powerSwitch.checked = power === "on" ? true : false;
   bulb.style.opacity = power === "on" ? brightness / 100 : 0.5;
-  bulb.style.backgroundColor = power === "on" ? rgbToHex(color) : "#ccc";
+  rootStyle.setProperty(
+    "--bulb-color",
+    power === "on" ? rgbToHex(color) : "#ccc",
+  );
 }
 
 function updateBulbState() {

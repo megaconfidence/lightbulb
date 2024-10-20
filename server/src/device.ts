@@ -27,7 +27,8 @@ export async function applyConfigToDevice(device: Device, config: Config) {
         await device.call("set_power", [config[c]]);
         break;
       case "brightness":
-        await device.call("set_bright", [config[c]]);
+        const brightness = config[c]! > 0 ? config[c] : 1;
+        await device.call("set_bright", [brightness]);
         break;
       case "color":
         const color = config[c]!;
