@@ -1,7 +1,7 @@
 import { rgbToHex, hexToRgb } from "./utils.js";
 
 let ws;
-const bulb = document.getElementById("bulb");
+const glow = document.getElementById("glow");
 const powerSwitch = document.getElementById("power");
 const colorPicker = document.getElementById("color");
 const rootStyle = document.querySelector(":root").style;
@@ -32,14 +32,21 @@ function connectToWebSocket() {
 
 function updateUi(payload) {
   const { power, brightness, color } = payload;
+  if (power === "off") {
+    glow.style.opacity = 0;
+  } else {
+    glow.style.opacity = "var(--bulb-opacity)";
+  }
+  const hex = rgbToHex(color);
+  const bColor = power === "on" ? hex : "#ccc";
+  const bOpacity = power === "on" ? brightness / 100 : 1;
+
+  colorPicker.value = hex;
   brightnessSlider.value = brightness;
-  colorPicker.value = rgbToHex(color);
   powerSwitch.checked = power === "on" ? true : false;
-  bulb.style.opacity = power === "on" ? brightness / 100 : 0.5;
-  rootStyle.setProperty(
-    "--bulb-color",
-    power === "on" ? rgbToHex(color) : "#ccc",
-  );
+
+  rootStyle.setProperty("--bulb-color", bColor);
+  rootStyle.setProperty("--bulb-opacity", bOpacity);
 }
 
 function updateBulbState() {
